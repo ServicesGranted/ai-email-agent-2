@@ -1,0 +1,834 @@
+{
+  "name": "AI Email Agent Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-agent-inbox",
+        "options": {}
+      },
+      "id": "af595ee1-31f6-452a-88c3-e410d22dbbe8",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Webhook Input",
+      "position": [
+        -1180,
+        160
+      ],
+      "typeVersion": 2,
+      "webhookId": "299fcb9b-db0a-482f-a54e-25773c5d292c"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "operation": "getAll",
+        "returnAll": true,
+        "filters": {},
+        "options": {}
+      },
+      "id": "799e8752-ff86-4732-94b9-c70d79417786",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "name": "Get Outlook Folders",
+      "position": [
+        -980,
+        180
+      ],
+      "typeVersion": 2,
+      "webhookId": "ed46a10a-9778-473b-83da-0c0d660c9b97",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nFRdh6ECDj2XCXiy",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "9a4784fd-87b1-4f6c-82d6-f171114445ab",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "name": "Get Outlook Emails",
+      "position": [
+        -980,
+        -80
+      ],
+      "typeVersion": 2,
+      "webhookId": "dd536681-5509-4cca-8a1c-e72098c9fb23",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nFRdh6ECDj2XCXiy",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "id": "17fbc5ab-4d00-4c56-a3b6-39ad396096a1",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "AI Analyze Prompt",
+      "position": [
+        -780,
+        40
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {},
+      "id": "b2d01109-b7a1-4157-b61c-12e1567a76f7",
+      "type": "n8n-nodes-base.code",
+      "name": "Extract AI Action",
+      "position": [
+        -580,
+        40
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "multi": [
+            {
+              "value1": "={{$json[\"action\"]}}",
+              "operation": "equal",
+              "value2": "missing-info"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f4809822-f685-4fc3-b84e-096222dd1bcb",
+      "type": "n8n-nodes-base.if",
+      "name": "If Missing Info",
+      "position": [
+        -380,
+        40
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-agent-inbox-missing",
+        "options": {}
+      },
+      "id": "6a983524-5597-409c-8ebb-5e0cad2c1812",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Missing Info Webhook",
+      "position": [
+        -240,
+        -280
+      ],
+      "typeVersion": 2,
+      "webhookId": "096da9ba-2d1a-452f-9b2d-0dfc70164fd8"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "id": "8b9f7500-2a0d-40c4-a7a8-d4474f8275ae",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "AI Merge Missing Info",
+      "position": [
+        -40,
+        -280
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {},
+      "id": "ec4b93eb-4c74-4c39-a3ae-29213096b0a6",
+      "type": "n8n-nodes-base.code",
+      "name": "Extract Merged Reminder",
+      "position": [
+        140,
+        -280
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-agent-inbox-approve",
+        "options": {}
+      },
+      "id": "4052b825-68e5-416e-ba48-6a9e96211f78",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Approval Webhook",
+      "position": [
+        -160,
+        220
+      ],
+      "typeVersion": 2,
+      "webhookId": "82e2fe98-6a64-4c61-986b-af0985fa7825"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json[\"body\"][\"approval\"] === true}}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "60ee4e8f-1a7d-444f-b1bf-156c3a91d460",
+      "type": "n8n-nodes-base.if",
+      "name": "If Approved",
+      "position": [
+        40,
+        220
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "multi": [
+            {
+              "value1": "={{$json[\"action\"]}}",
+              "operation": "equal",
+              "value2": "move-emails"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f8983ad9-48cf-4650-9e01-d41d0fbbb965",
+      "type": "n8n-nodes-base.if",
+      "name": "If Move Emails",
+      "position": [
+        240,
+        -20
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "multi": [
+            {
+              "value1": "={{$json[\"action\"]}}",
+              "operation": "equal",
+              "value2": "create-reminder"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8ee5fcee-0d37-4a76-9f55-1e1b8e1ff576",
+      "type": "n8n-nodes-base.if",
+      "name": "If Create Reminder",
+      "position": [
+        260,
+        200
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "multi": [
+            {
+              "value1": "={{$json[\"action\"]}}",
+              "operation": "equal",
+              "value2": "reply-email"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9be75a80-a98c-40b3-addb-e631f2383135",
+      "type": "n8n-nodes-base.if",
+      "name": "If Reply Email",
+      "position": [
+        300,
+        420
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {},
+      "id": "9013b53d-2049-4728-9425-af5841d4d4a2",
+      "type": "n8n-nodes-base.code",
+      "name": "Find FolderId by Name",
+      "position": [
+        520,
+        -20
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {},
+      "id": "8ec835e0-dfc3-40a4-9256-7e067dc3729e",
+      "type": "n8n-nodes-base.code",
+      "name": "Prepare Move List",
+      "position": [
+        720,
+        -20
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "messageId": "={{$json[\"messageId\"]}}",
+        "folderId": {
+          "__rl": true,
+          "value": "={{$json[\"folderId\"]}}",
+          "mode": "id"
+        }
+      },
+      "id": "7fa350d4-0089-4051-b64e-866a34561978",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "name": "Move Each Email",
+      "position": [
+        920,
+        -20
+      ],
+      "typeVersion": 2,
+      "webhookId": "6d6e474d-afc6-4cc6-97bb-32f1ee0d3ec7",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nFRdh6ECDj2XCXiy",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e709b787-5e6b-4f28-b430-d1d609a8ff25",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "name": "Confirm Move",
+      "position": [
+        1120,
+        -20
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": "primary",
+        "subject": "={{$json[\"title\"]}}",
+        "additionalFields": {}
+      },
+      "id": "1f50c7f4-bbe1-4dbd-8764-9cca4d2e5569",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "name": "Create Reminder",
+      "position": [
+        520,
+        200
+      ],
+      "typeVersion": 2,
+      "webhookId": "a5582eb3-ff83-4937-abdc-7ee3b41bffb3",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nFRdh6ECDj2XCXiy",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "cc2237c5-7e26-4488-b0b2-a20a010c3ec0",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "name": "Confirm Reminder",
+      "position": [
+        720,
+        200
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {},
+      "id": "95528e2d-8516-40cf-86be-1b6297944280",
+      "type": "n8n-nodes-base.code",
+      "name": "Find Email to Reply",
+      "position": [
+        500,
+        420
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/chat/completions",
+        "options": {},
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "id": "9e9a3093-3c5f-4afc-ba55-af9ef2dc556f",
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "AI Propose Reply",
+      "position": [
+        720,
+        360
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-agent-inbox-reply-confirm",
+        "options": {}
+      },
+      "id": "415da131-5ce0-4232-b1fa-02379c1bea48",
+      "type": "n8n-nodes-base.webhook",
+      "name": "Reply Type Webhook",
+      "position": [
+        920,
+        360
+      ],
+      "typeVersion": 2,
+      "webhookId": "1243ee1b-3442-45f6-a939-686712d9dd81"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "940f219f-7118-4c86-94b7-071ebb1b600b",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "219d10ae-dca3-4e1d-88e9-4224477241fa",
+      "type": "n8n-nodes-base.if",
+      "name": "If ReplyType",
+      "position": [
+        1120,
+        360
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{$node[\"FindEmailToReply\"].json.messageId}}",
+        "options": {}
+      },
+      "id": "a1fd4142-e270-4e62-aad7-f7ae6b428ec1",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "name": "Send Reply",
+      "position": [
+        1360,
+        480
+      ],
+      "typeVersion": 2,
+      "webhookId": "24787bbb-239d-454f-b03d-48750b5805ef",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nFRdh6ECDj2XCXiy",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "replyAll"
+      },
+      "id": "a37d0fc2-6370-4380-be3c-cafafc4ee168",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "name": "Send Reply All",
+      "position": [
+        1360,
+        300
+      ],
+      "typeVersion": 2,
+      "webhookId": "970ab2b0-0c17-4290-9d65-219f026fce55",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nFRdh6ECDj2XCXiy",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "91af450b-7345-4ac9-b8a9-27dd915d9a08",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "name": "Confirm Reply",
+      "position": [
+        1560,
+        360
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e2524e16-54cf-4584-a26f-b127840ca455",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "name": "Default Confirm",
+      "position": [
+        500,
+        620
+      ],
+      "typeVersion": 1.3
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Input": {
+      "main": [
+        [
+          {
+            "node": "Get Outlook Folders",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Outlook Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Outlook Folders": {
+      "main": [
+        [
+          {
+            "node": "AI Analyze Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Outlook Emails": {
+      "main": [
+        [
+          {
+            "node": "AI Analyze Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Analyze Prompt": {
+      "main": [
+        [
+          {
+            "node": "Extract AI Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract AI Action": {
+      "main": [
+        [
+          {
+            "node": "If Missing Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval Webhook": {
+      "main": [
+        [
+          {
+            "node": "If Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Missing Info Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Merge Missing Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Merge Missing Info": {
+      "main": [
+        [
+          {
+            "node": "Extract Merged Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Merged Reminder": {
+      "main": [
+        [
+          {
+            "node": "If Missing Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Approved": {
+      "main": [
+        [
+          {
+            "node": "If Move Emails",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If Create Reminder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If Reply Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Reply Email": {
+      "main": [
+        [
+          {
+            "node": "Find Email to Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Default Confirm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Email to Reply": {
+      "main": [
+        [
+          {
+            "node": "AI Propose Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Type Webhook": {
+      "main": [
+        [
+          {
+            "node": "If ReplyType",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If ReplyType": {
+      "main": [
+        [
+          {
+            "node": "Send Reply All",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reply": {
+      "main": [
+        [
+          {
+            "node": "Confirm Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reply All": {
+      "main": [
+        [
+          {
+            "node": "Confirm Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Move Emails": {
+      "main": [
+        [
+          {
+            "node": "Find FolderId by Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Create Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find FolderId by Name": {
+      "main": [
+        [
+          {
+            "node": "Prepare Move List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Move List": {
+      "main": [
+        [
+          {
+            "node": "Move Each Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move Each Email": {
+      "main": [
+        [
+          {
+            "node": "Confirm Move",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Create Reminder": {
+      "main": [
+        [
+          {
+            "node": "Create Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Reply Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Reminder": {
+      "main": [
+        [
+          {
+            "node": "Confirm Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a66c305f-5728-4089-a94a-685157dd99a5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0623a321166da3dd6b5e92571b44a2b908ad07e18479cc431ffe4e8b3f13177b"
+  },
+  "id": "WDMIA0Omt5E3y9oz",
+  "tags": []
+}

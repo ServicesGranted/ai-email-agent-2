@@ -1,0 +1,55 @@
+$source = "C:\code\ai-email-agent\frontend"
+$destination = "C:\code\ai-email-agent\context"
+$masterFile = "C:\code\ai-email-agent\project_context.txt"
+
+# List of text/code file extensions to include
+$textExtensions = @('*.js', '*.ts', '*.jsx', '*.tsx', '*.json', '*.html', '*.css', '*.scss', '*.md', '*.txt', '*.yml', '*.yaml', '*.env')
+
+# Helper function: recursively get files but skip node_modules and .next folders
+function Get-CodeFiles {
+    param([string]$path)
+    $codeFiles = @()
+    $dirs = Get-ChildItem -Path $path -Directory | Where-Object { $_.Name -ne "node_modules" -and $_.Name -ne ".next" }
+    foreach ($dir in $dirs) {
+        $codeFiles += Get-CodeFiles -path $dir.FullName
+    }
+    foreach ($ext in $textExtensions) {
+        $codeFiles += Get-ChildItem -Path $path -Filter $ext -File -ErrorAction SilentlyContinue
+    }
+    return $codeFiles
+}
+
+# Create destination folder if it doesn't exist
+if (!(Test-Path -Path $destination)) {
+    New-Item -ItemType Directory -Path $destination | Out-Null
+}
+
+# Remove any previous txt files in the context folder
+Get-ChildItem -Path $destination -Recurse -Include *.txt -ErrorAction SilentlyContinue | Remove-Item -Force
+
+# Get all code/text files, fully skipping node_modules and .next
+$files = Get-CodeFiles -path $source
+
+foreach ($file in $files) {
+    $relativePath = $file.FullName.Substring($source.Length + 1)
+    $relativeDir = Split-Path -Parent $relativePath
+    $targetDir = Join-Path $destination $relativeDir
+    if (!(Test-Path $targetDir)) {
+        New-Item -ItemType Directory -Path $targetDir | Out-Null
+    }
+    $targetFile = [System.IO.Path]::ChangeExtension((Join-Path $targetDir $file.Name), ".txt")
+    Copy-Item $file.FullName $targetFile
+}
+
+# Create the master context file
+if (Test-Path $masterFile) { Remove-Item $masterFile }
+
+# Merge all .txt files with header formatting
+Get-ChildItem -Path $destination -Recurse -Include *.txt | ForEach-Object {
+    $relative = $_.FullName.Substring($destination.Length + 1)
+    Add-Content -Path $masterFile -Value ("===== FILE: $relative =====")
+    Add-Content -Path $masterFile -Value (Get-Content $_.FullName)
+    Add-Content -Path $masterFile -Value "`n`n"
+}
+
+Write-Output "Merged context file created at $masterFile"
